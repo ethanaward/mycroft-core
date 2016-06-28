@@ -17,7 +17,7 @@
 
 
 import shortuuid
-from os.path import dirname, join, abspath
+from os.path import dirname, join
 
 from mycroft.configuration import ConfigurationManager
 from mycroft.identity import IdentityManager
@@ -25,6 +25,7 @@ from mycroft.messagebus.client.ws import WebsocketClient
 from mycroft.messagebus.message import Message
 from mycroft.util import str2bool
 from mycroft.dialog import DialogLoader
+from mycroft.client.enclosure.api import EnclosureAPI
 
 _config = ConfigurationManager.get().get("pairing_client")
 
@@ -71,10 +72,26 @@ class DevicePairingClient(object):
     def print_error(message):
         print(repr(message))
 
-    def display_code(self, emitter):
-        dialog_renderer = DialogLoader().load(abspath(join(dirname(__file__), '..', 'skills/pairing/dialog')))
-        emitter.emit(Message('speak', metadata={'utterance': dialog_renderer.render('not.paired')}))
-        emitter.emit(Message('speak', metadata={'utterance': dialog_renderer.render('pairing.instructions', {'pairing_code': self.pairing_code})}))
+    def tell_not_paired(self, emitter):
+        dialog_renderer = DialogLoader().load((join(dirname(__file__),
+                                                    'dialog')))
+        emitter.emit(Message('speak',
+                             metadata={'utterance':
+                                       dialog_renderer.render('not.paired')}))
+        emitter.emit(Message('speak',
+                             metadata={'utterance':
+                                       dialog_renderer.render(
+                                           'pairing.instructions',
+                                           {'pairing_code':
+                                            ', ,'.join(self.pairing_code)})}))
+        self._emit_paired(False, emitter)
+        self.enclosure = EnclosureAPI(emitter)
+        self.enclosure.activate_mouth_listeners(False)
+        self.enclosure.mouth_text(self.pairing_code)
+
+    def tell_paired(self, emitter):
+        self.enclosure.activate_mouth_listeners(True)
+        self._emit_paired(True, emitter)
 
     def run(self):
         self.ws_client.on('registration', self.on_registration)

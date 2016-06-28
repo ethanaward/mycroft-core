@@ -17,7 +17,6 @@
 
 
 import json
-import requests
 from os.path import expanduser, exists
 from threading import Thread
 
@@ -28,7 +27,6 @@ from mycroft.util.log import getLogger
 from mycroft.pairing.client import DevicePairingClient
 from mycroft.skills.wolfram_alpha import CerberusWolframAlphaClient
 
-from mycroft.client.enclosure.api import EnclosureAPI
 
 logger = getLogger("Skills")
 
@@ -46,25 +44,16 @@ def load_skills_callback():
 
     if cerberus:
         try:
-            CerberusWolframAlphaClient().query('test')
+            CerberusWolframAlphaClient().query(' ')
         except:
             pairing_client = DevicePairingClient()
-
             Thread(target=pairing_client.run).start()
-
-            pairing_client.display_code(client)
-
-            pairing_client._emit_paired(False, client)
-            enclosure = EnclosureAPI(client)
-            enclosure.activate_mouth_listeners(False)
-            enclosure.mouth_text(pairing_client.pairing_code)
+            pairing_client.tell_not_paired(client)
 
             while(not pairing_client.paired):
                 pass
 
-            enclosure.activate_mouth_listeners(True)
-
-            pairing_client._emit_paired(True, client)
+            pairing_client.tell_paired(client)
 
     load_skills(client)
 
