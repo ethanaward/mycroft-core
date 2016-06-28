@@ -17,7 +17,7 @@
 
 
 import json
-from os.path import expanduser, exists, dirname, join
+from os.path import expanduser, exists
 from threading import Thread
 
 from mycroft.configuration import ConfigurationManager
@@ -25,8 +25,8 @@ from mycroft.messagebus.client.ws import WebsocketClient
 from mycroft.skills.core import load_skills, THIRD_PARTY_SKILLS_DIR
 from mycroft.util.log import getLogger
 from mycroft.pairing.client import DevicePairingClient
-from mycroft.messagebus.message import Message
-from mycroft.dialog import DialogLoader
+
+from mycroft.client.enclosure.api import EnclosureAPI
 
 logger = getLogger("Skills")
 
@@ -47,12 +47,14 @@ def load_skills_callback():
 
         Thread(target=pairing_client.run).start()
 
-        dialog_renderer = DialogLoader().load(join(dirname(__file__), 'pairing/dialog'))
-        client.emit(Message('speak', metadata={'utterance': dialog_renderer.render('not.paired')}))
-        client.emit(Message('speak', metadata={'utterance': dialog_renderer.render('pairing.instructions', {'pairing_code': pairing_client.pairing_code})}))
+        pairing_client.display_code(client)
+        pairing_client._emit_paired(False, client)
+        enclosure = EnclosureAPI(client)
 
         while(not pairing_client.paired):
-            pass
+            enclosure.mouth_text(pairing_client.pairing_code)
+
+        pairing_client._emit_paired(True, client)
 
     load_skills(client)
 
