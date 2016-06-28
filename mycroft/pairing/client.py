@@ -17,7 +17,7 @@
 
 
 import shortuuid
-from os.path import dirname, join
+from os.path import dirname, join, abspath
 
 from mycroft.configuration import ConfigurationManager
 from mycroft.identity import IdentityManager
@@ -72,7 +72,7 @@ class DevicePairingClient(object):
         print(repr(message))
 
     def display_code(self, emitter):
-        dialog_renderer = DialogLoader().load(join(dirname(__file__), 'pairing/dialog'))
+        dialog_renderer = DialogLoader().load(abspath(join(dirname(__file__), '..', 'skills/pairing/dialog')))
         emitter.emit(Message('speak', metadata={'utterance': dialog_renderer.render('not.paired')}))
         emitter.emit(Message('speak', metadata={'utterance': dialog_renderer.render('pairing.instructions', {'pairing_code': self.pairing_code})}))
 
