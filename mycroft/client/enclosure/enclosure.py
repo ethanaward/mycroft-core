@@ -232,7 +232,6 @@ class Enclosure:
             raise
 
     def __register_events(self):
-        self.client.on('mycroft.paired', self.__update_events)
         self.client.on('enclosure.mouth.listeners', self.__mouth_listeners)
         self.__register_mouth_events()
 
@@ -257,13 +256,6 @@ class Enclosure:
                            self.mouth.talk)
         self.client.remove('recognizer_loop:audio_output_end',
                            self.mouth.reset)
-
-    def __update_events(self, event=None):
-        if event and event.metadata:
-            if event.metadata.get('paired', False):
-                self.__register_mouth_events()
-            else:
-                self.__remove_mouth_events()
 
     def run(self):
         try:

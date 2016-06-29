@@ -43,6 +43,7 @@ class DevicePairingClient(object):
         self.pairing_code = (
             pairing_code if pairing_code else self.generate_pairing_code())
 
+    @staticmethod
     def generate_pairing_code(self):
         shortuuid.set_alphabet("0123456789ABCDEF")
         return shortuuid.random(length=6)
@@ -72,36 +73,37 @@ class DevicePairingClient(object):
     def print_error(message):
         print(repr(message))
 
-    def tell_not_paired(self, emitter):
+    def speak_not_paired_dialog(self, emitter):
         dialog_renderer = DialogLoader().load((join(dirname(__file__),
                                                     'dialog')))
         emitter.emit(Message('speak',
                              metadata={'utterance':
-                                       dialog_renderer.render('not.paired')}))
+                                       dialog_renderer.render(
+                                           'not.paired')}))
         emitter.emit(Message('speak',
                              metadata={'utterance':
                                        dialog_renderer.render(
                                            'pairing.instructions',
                                            {'pairing_code':
                                             ', ,'.join(self.pairing_code)})}))
-        self._emit_paired(False, emitter)
-        self.enclosure = EnclosureAPI(emitter)
-        self.enclosure.activate_mouth_listeners(False)
-        self.enclosure.mouth_text(self.pairing_code)
 
-    def tell_paired(self, emitter):
-        self.enclosure.activate_mouth_listeners(True)
-        self._emit_paired(True, emitter)
+    def send_enclosure_signals(self, emitter, paired):
+        self.enclosure = EnclosureAPI(emitter)
+        if paired:
+            self.enclosure.activate_mouth_listeners(False)
+            self.enclosure.mouth_text(self.pairing_code)
+        else:
+            self.enclosure.activate_mouth_listeners(True)
+
+    def tell_not_paired(self, emitter):
+        self.speak_not_paired_dialog(emitter)
+        self.send_enclosure_signals(emitter, False)
 
     def run(self):
         self.ws_client.on('registration', self.on_registration)
         self.ws_client.on('open', self.send_device_info)
         self.ws_client.on('error', self.print_error)
         self.ws_client.run_forever()
-
-    def _emit_paired(self, paired, emitter):
-        msg = Message('mycroft.paired', metadata={'paired': paired})
-        emitter.emit(msg)
 
 
 def main():

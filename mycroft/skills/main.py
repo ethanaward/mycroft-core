@@ -53,7 +53,7 @@ def load_skills_callback():
             while(not pairing_client.paired):
                 pass
 
-            pairing_client.tell_paired(client)
+            pairing_client.send_enclosure_signals(client, True)
 
     load_skills(client)
 
