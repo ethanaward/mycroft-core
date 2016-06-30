@@ -18,6 +18,7 @@
 
 import shortuuid
 from os.path import dirname, join
+import requests
 
 from mycroft.configuration import ConfigurationManager
 from mycroft.identity import IdentityManager
@@ -26,6 +27,7 @@ from mycroft.messagebus.message import Message
 from mycroft.util import str2bool
 from mycroft.dialog import DialogLoader
 from mycroft.client.enclosure.api import EnclosureAPI
+from mycroft.util import CerberusAccessDenied
 
 _config = ConfigurationManager.get().get("pairing_client")
 
@@ -44,7 +46,7 @@ class DevicePairingClient(object):
             pairing_code if pairing_code else self.generate_pairing_code())
 
     @staticmethod
-    def generate_pairing_code(self):
+    def generate_pairing_code():
         shortuuid.set_alphabet("0123456789ABCDEF")
         return shortuuid.random(length=6)
 
@@ -104,6 +106,17 @@ class DevicePairingClient(object):
         self.ws_client.on('open', self.send_device_info)
         self.ws_client.on('error', self.print_error)
         self.ws_client.run_forever()
+
+
+class CerberusPairingTestProxy(object):
+    def query(self):
+        identity = IdentityManager().get()
+        bearer_token = 'Bearer %s:%s' % (identity.device_id, identity.token)
+        url = 'https://cerberus.mycroft.ai/user'
+        headers = {'Authorization': bearer_token}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 401:
+            raise CerberusAccessDenied()
 
 
 def main():

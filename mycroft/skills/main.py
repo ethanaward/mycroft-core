@@ -19,15 +19,16 @@
 import json
 from os.path import expanduser, exists
 from threading import Thread
+import time
 
 from mycroft.configuration import ConfigurationManager
 from mycroft.messagebus.client.ws import WebsocketClient
 from mycroft.skills.core import load_skills, THIRD_PARTY_SKILLS_DIR
 from mycroft.util.log import getLogger
-from mycroft.pairing.client import DevicePairingClient
-from mycroft.skills.wolfram_alpha import CerberusWolframAlphaClient
+from mycroft.pairing.client import DevicePairingClient, \
+    CerberusPairingTestProxy
 
-
+import caldav
 logger = getLogger("Skills")
 
 __author__ = 'seanfitz'
@@ -44,14 +45,16 @@ def load_skills_callback():
 
     if cerberus:
         try:
-            CerberusWolframAlphaClient().query(' ')
+            CerberusPairingTestProxy().query()
         except:
             pairing_client = DevicePairingClient()
             Thread(target=pairing_client.run).start()
             pairing_client.tell_not_paired(client)
+            starttime = time.time()
 
             while(not pairing_client.paired):
-                pass
+                if (time.time() - starttime).total_seconds() % 20.0 == 0:
+                    pairing_client.tell_not_paired(client)
 
             pairing_client.send_enclosure_signals(client, True)
 
