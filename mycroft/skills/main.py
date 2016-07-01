@@ -50,13 +50,11 @@ def load_skills_callback():
             pairing_client = DevicePairingClient()
             Thread(target=pairing_client.run).start()
             pairing_client.tell_not_paired(client)
-            starttime = time.time()
 
             while(not pairing_client.paired):
-                if (time.time() - starttime).total_seconds() % 20.0 == 0:
-                    pairing_client.tell_not_paired(client)
+                pass
 
-            pairing_client.send_enclosure_signals(client, True)
+            pairing_client.tell_paired(client)
 
     load_skills(client)
 

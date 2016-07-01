@@ -76,30 +76,37 @@ class DevicePairingClient(object):
         print(repr(message))
 
     def speak_not_paired_dialog(self, emitter):
-        dialog_renderer = DialogLoader().load((join(dirname(__file__),
+        self.dialog_renderer = DialogLoader().load((join(dirname(__file__),
                                                     'dialog')))
         emitter.emit(Message('speak',
                              metadata={'utterance':
-                                       dialog_renderer.render(
+                                       self.dialog_renderer.render(
                                            'not.paired')}))
         emitter.emit(Message('speak',
                              metadata={'utterance':
-                                       dialog_renderer.render(
+                                       self.dialog_renderer.render(
                                            'pairing.instructions',
                                            {'pairing_code':
                                             ', ,'.join(self.pairing_code)})}))
 
+    def speak_paired_dialog(self, emitter):
+        emitter.emit(Message('speak', metadata={'utterance':
+                                                self.dialog_renderer.
+                             render('paired')}))
+
     def send_enclosure_signals(self, emitter, paired):
         self.enclosure = EnclosureAPI(emitter)
-        if paired:
-            self.enclosure.activate_mouth_listeners(False)
+        self.enclosure.activate_mouth_listeners(paired)
+        if paired is False:
             self.enclosure.mouth_text(self.pairing_code)
-        else:
-            self.enclosure.activate_mouth_listeners(True)
 
     def tell_not_paired(self, emitter):
         self.speak_not_paired_dialog(emitter)
         self.send_enclosure_signals(emitter, False)
+
+    def tell_paired(self, emitter):
+        self.speak_paired_dialog(emitter)
+        self.send_enclosure_signals(emitter, True)
 
     def run(self):
         self.ws_client.on('registration', self.on_registration)
