@@ -20,6 +20,7 @@ import json
 from os.path import expanduser, exists
 from threading import Thread
 import time
+from datetime import datetime
 
 from mycroft.configuration import ConfigurationManager
 from mycroft.messagebus.client.ws import WebsocketClient
@@ -28,7 +29,6 @@ from mycroft.util.log import getLogger
 from mycroft.pairing.client import DevicePairingClient, \
     CerberusPairingTestProxy
 
-import caldav
 logger = getLogger("Skills")
 
 __author__ = 'seanfitz'
@@ -50,9 +50,13 @@ def load_skills_callback():
             pairing_client = DevicePairingClient()
             Thread(target=pairing_client.run).start()
             pairing_client.tell_not_paired(client)
+            old = datetime.now()            
 
             while(not pairing_client.paired):
-                pass
+                if (datetime.now() - old).total_seconds() >= 40:
+                    old = datetime.now()
+                    pairing_client.tell_not_paired(client) 
+            
 
             pairing_client.tell_paired(client)
 

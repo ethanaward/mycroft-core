@@ -28,6 +28,7 @@ from mycroft.util import str2bool
 from mycroft.dialog import DialogLoader
 from mycroft.client.enclosure.api import EnclosureAPI
 from mycroft.util import CerberusAccessDenied
+from mycroft.util.log import getLogger
 
 _config = ConfigurationManager.get().get("pairing_client")
 
@@ -95,18 +96,20 @@ class DevicePairingClient(object):
                              render('paired')}))
 
     def send_enclosure_signals(self, emitter, paired):
+        getLogger().debug('send')
         self.enclosure = EnclosureAPI(emitter)
         self.enclosure.activate_mouth_listeners(paired)
         if paired is False:
             self.enclosure.mouth_text(self.pairing_code)
 
     def tell_not_paired(self, emitter):
-        self.speak_not_paired_dialog(emitter)
         self.send_enclosure_signals(emitter, False)
-
+        self.speak_not_paired_dialog(emitter)
+ 
     def tell_paired(self, emitter):
-        self.speak_paired_dialog(emitter)
+        getLogger().debug('test')
         self.send_enclosure_signals(emitter, True)
+        self.speak_paired_dialog(emitter)
 
     def run(self):
         self.ws_client.on('registration', self.on_registration)
