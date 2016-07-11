@@ -30,7 +30,7 @@ class DevicePairingClientTest(unittest.TestCase):
         for value in results:
             self.assertTrue(value in result_list)
 
-    def get_lines_from_file(self, filename, dialog_list):
+    def add_lines_from_file(self, filename, dialog_list):
         with open(abspath(join(dirname(__file__),
                                '../../mycroft/pairing/dialog', filename)),
                   'r') as dialog_file:
@@ -38,22 +38,28 @@ class DevicePairingClientTest(unittest.TestCase):
                 line = line.strip().replace('{{pairing_code}}',
                                             ', ,'.join(
                                                 self.client.pairing_code))
-                dialog_list.append(line.strip())
+                dialog_list.append(line)
 
     def test_send_enclosure_signals_false(self):
         self.client.send_enclosure_signals(self.emitter, False)
-        self.check_emitter(['enclosure.mouth.listeners'], [True], ['active'])
-
-    def test_send_enclosure_signals_true(self):
-        self.client.send_enclosure_signals(self.emitter, True)
         self.check_emitter(['enclosure.mouth.listeners',
                             'enclosure.mouth.text'],
                            [self.client.pairing_code, False],
                            ['active', 'text'])
 
+    def test_send_enclosure_signals_true(self):
+        self.client.send_enclosure_signals(self.emitter, True)
+        self.check_emitter(['enclosure.mouth.listeners'], [True], ['active'])
+
     def test_speak_not_paired_dialog(self):
         self.client.speak_not_paired_dialog(self.emitter)
         line_list = []
-        self.get_lines_from_file('not.paired.dialog', line_list)
-        self.get_lines_from_file('pairing.instructions.dialog', line_list)
+        self.add_lines_from_file('not.paired.dialog', line_list)
+        self.add_lines_from_file('pairing.instructions.dialog', line_list)
+        self.check_emitter(['speak'], line_list, ['utterance'])
+
+    def test_speak_paired_dialog(self):
+        self.client.speak_paired_dialog(self.emitter)
+        line_list = []
+        self.add_lines_from_file('paired.dialog', line_list)
         self.check_emitter(['speak'], line_list, ['utterance'])

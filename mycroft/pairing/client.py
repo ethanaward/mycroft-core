@@ -96,7 +96,6 @@ class DevicePairingClient(object):
                              render('paired')}))
 
     def send_enclosure_signals(self, emitter, paired):
-        getLogger().debug('send')
         self.enclosure = EnclosureAPI(emitter)
         self.enclosure.activate_mouth_listeners(paired)
         if paired is False:
@@ -107,7 +106,6 @@ class DevicePairingClient(object):
         self.speak_not_paired_dialog(emitter)
  
     def tell_paired(self, emitter):
-        getLogger().debug('test')
         self.send_enclosure_signals(emitter, True)
         self.speak_paired_dialog(emitter)
 
