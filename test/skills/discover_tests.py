@@ -2,6 +2,8 @@ import os
 import glob
 import unittest
 from test.skills.skill_tester import MockSkillsLoader, SkillTest
+from mycroft.skills.core import THIRD_PARTY_SKILLS_DIR
+import pprint
 
 __author__ = 'seanfitz'
 
@@ -15,6 +17,10 @@ def discover_tests():
         in glob.glob(os.path.join(PROJECT_ROOT, 'mycroft/skills/*'))
         if os.path.isdir(skill)
     ]
+
+    skills += [skill for skill in glob.glob(THIRD_PARTY_SKILLS_DIR + '*') if os.path.isdir(skill)]
+    print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+    pprint.pprint(glob.glob(THIRD_PARTY_SKILLS_DIR + '*'))
 
     for skill in skills:
         test_intent_files = [

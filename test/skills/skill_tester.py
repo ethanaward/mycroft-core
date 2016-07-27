@@ -30,6 +30,7 @@ class MockSkillsLoader(object):
 
     def load_skills(self):
         load_skills(self.emitter, self.skills_root)
+        load_skills(self.emitter, '/opt/mycroft/third_party/')
         return self.emitter.emitter  # kick out the underlying emitter
 
 
