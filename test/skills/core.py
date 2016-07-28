@@ -90,8 +90,7 @@ class MycroftSkillTest(unittest.TestCase):
                          {'regex': '(?P<SingleTest>.*)'}])
 
     def test_load_regex_empty(self):
-        self.check_regex(join(dirname(__file__),
-                              'wolfram_alpha'))
+        self.check_regex(dirname(__file__))
 
     def test_load_regex_fail(self):
         try:
@@ -149,7 +148,7 @@ class MycroftSkillTest(unittest.TestCase):
                           'alias_of': 'table'}])
 
     def test_load_vocab_empty(self):
-        self.check_vocab(join(dirname(__file__), 'wolfram_alpha'))
+        self.check_vocab(dirname(__file__))
 
     def test_load_vocab_fail(self):
         try:
