@@ -27,11 +27,6 @@ from mycroft.util import str2bool
 _config = ConfigurationManager.get().get("pairing_client")
 
 
-def generate_pairing_code():
-    shortuuid.set_alphabet("0123456789ABCDEF")
-    return shortuuid.random(length=6)
-
-
 class DevicePairingClient(object):
     def __init__(self, config=_config, pairing_code=None):
         self.config = config
@@ -43,7 +38,11 @@ class DevicePairingClient(object):
         self.identity_manager = IdentityManager()
         self.identity = self.identity_manager.identity
         self.pairing_code = (
-            pairing_code if pairing_code else generate_pairing_code())
+            pairing_code if pairing_code else self.generate_pairing_code())
+
+    def generate_pairing_code(self):
+        shortuuid.set_alphabet("0123456789ABCDEF")
+        return shortuuid.random(length=6)
 
     def on_registration(self, message):
         # TODO: actually accept the configuration message and store it in
