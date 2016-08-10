@@ -104,7 +104,7 @@ class DevicePairingClient(object):
     def tell_not_paired(self, emitter):
         self.send_enclosure_signals(emitter, False)
         self.speak_not_paired_dialog(emitter)
- 
+
     def tell_paired(self, emitter):
         self.send_enclosure_signals(emitter, True)
         self.speak_paired_dialog(emitter)
